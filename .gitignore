@@ -4,3 +4,6 @@ output/*
 .idea
 experiments/*
 logs/*
+.venv/
+__pycache__/
+output_pytorch/
