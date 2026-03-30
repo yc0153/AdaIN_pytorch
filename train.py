@@ -20,6 +20,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
 def train_transform():
+    # 논문 학습 설정에 맞춰 먼저 리사이즈하고, 그다음 랜덤 크롭을 적용한다.
     transform_list = [
         transforms.Resize(size=(512, 512)),
         transforms.RandomCrop(256),
@@ -36,6 +37,7 @@ class FlatFolderDataset(data.Dataset):
         self.transform = transform
 
     def __getitem__(self, index):
+        # 이미지 한 장을 읽어서 RGB 텐서로 변환한다.
         path = self.paths[index]
         img = Image.open(str(path)).convert('RGB')
         img = self.transform(img)
@@ -50,6 +52,7 @@ class FlatFolderDataset(data.Dataset):
 
 def adjust_learning_rate(optimizer, iteration_count):
     """Imitating the original implementation"""
+    # 원본 구현처럼 iteration이 진행될수록 학습률을 조금씩 감소시킨다.
     lr = args.lr / (1.0 + args.lr_decay * iteration_count)
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
@@ -88,15 +91,18 @@ writer = SummaryWriter(log_dir=str(log_dir))
 decoder = net.decoder
 vgg = net.vgg
 
+# 고정된 VGG 인코더와 학습할 디코더를 불러온다.
 vgg.load_state_dict(torch.load(args.vgg))
 vgg = nn.Sequential(*list(vgg.children())[:31])
 network = net.Net(vgg, decoder)
 network.train()
 network.to(device)
 
+# content와 style 배치에 동일한 전처리를 적용한다.
 content_tf = train_transform()
 style_tf = train_transform()
 
+# 폴더에서 이미지를 읽고, 학습 중에는 무한 샘플링 방식으로 배치를 공급한다.
 content_dataset = FlatFolderDataset(args.content_dir, content_tf)
 style_dataset = FlatFolderDataset(args.style_dir, style_tf)
 
@@ -111,6 +117,7 @@ style_iter = iter(data.DataLoader(
 
 optimizer = torch.optim.Adam(network.decoder.parameters(), lr=args.lr)
 
+# 메인 학습 루프: 배치를 가져와 AdaIN 손실을 계산하고 디코더를 업데이트한다.
 for i in tqdm(range(args.max_iter)):
     adjust_learning_rate(optimizer, iteration_count=i)
     content_images = next(content_iter).to(device)
@@ -128,6 +135,7 @@ for i in tqdm(range(args.max_iter)):
     writer.add_scalar('loss_style', loss_s.item(), i + 1)
 
     if (i + 1) % args.save_model_interval == 0 or (i + 1) == args.max_iter:
+        # 체크포인트를 어디서나 불러올 수 있도록 CPU 텐서로 저장한다.
         state_dict = net.decoder.state_dict()
         for key in state_dict.keys():
             state_dict[key] = state_dict[key].to(torch.device('cpu'))

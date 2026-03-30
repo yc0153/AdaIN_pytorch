@@ -12,6 +12,7 @@ from function import adaptive_instance_normalization, coral
 
 
 def test_transform(size, crop):
+    # 추론 시 이미지 한 장에 적용할 전처리 파이프라인을 만든다.
     transform_list = []
     if size != 0:
         transform_list.append(transforms.Resize(size))
@@ -24,10 +25,12 @@ def test_transform(size, crop):
 
 def style_transfer(vgg, decoder, content, style, alpha=1.0,
                    interpolation_weights=None):
+    # content/style를 인코딩한 뒤 feature 공간에서 AdaIN을 적용하고 다시 이미지로 복원한다.
     assert (0.0 <= alpha <= 1.0)
     content_f = vgg(content)
     style_f = vgg(style)
     if interpolation_weights:
+        # 여러 style feature를 가중합해 하나의 결과 이미지로 디코딩한다.
         _, C, H, W = content_f.size()
         feat = torch.FloatTensor(1, C, H, W).zero_().to(device)
         base_feat = adaptive_instance_normalization(content_f, style_f)
@@ -85,6 +88,7 @@ do_interpolation = False
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+# 추론을 시작하기 전에 결과 저장 폴더를 만든다.
 output_dir = Path(args.output)
 output_dir.mkdir(exist_ok=True, parents=True)
 
@@ -115,6 +119,7 @@ else:
 decoder = net.decoder
 vgg = net.vgg
 
+# 사전학습 가중치를 불러오고 두 네트워크를 추론 모드로 전환한다.
 decoder.eval()
 vgg.eval()
 
@@ -128,10 +133,11 @@ decoder.to(device)
 content_tf = test_transform(args.content_size, args.crop)
 style_tf = test_transform(args.style_size, args.crop)
 
+# 입력된 모든 content 이미지를 하나 또는 여러 style 이미지와 조합해 처리한다.
 for content_path in content_paths:
     if do_interpolation:  # one content image, N style image
-        style = torch.stack([style_tf(Image.open(str(p))) for p in style_paths])
-        content = content_tf(Image.open(str(content_path))) \
+        style = torch.stack([style_tf(Image.open(str(p)).convert('RGB')) for p in style_paths])
+        content = content_tf(Image.open(str(content_path)).convert('RGB')) \
             .unsqueeze(0).expand_as(style)
         style = style.to(device)
         content = content.to(device)
@@ -145,9 +151,16 @@ for content_path in content_paths:
 
     else:  # process one content and one style
         for style_path in style_paths:
-            content = content_tf(Image.open(str(content_path)))
-            style = style_tf(Image.open(str(style_path)))
+            output_name = output_dir / '{:s}_stylized_{:s}{:s}'.format(
+                content_path.stem, style_path.stem, args.save_ext)
+            if output_name.exists():
+                continue
+
+            # 가장 기본적인 1 대 1 스타일 전이 경로이다.
+            content = content_tf(Image.open(str(content_path)).convert('RGB'))
+            style = style_tf(Image.open(str(style_path)).convert('RGB'))
             if args.preserve_color:
+                # 스타일의 질감은 쓰되 content의 색감은 유지하도록 보정한다.
                 style = coral(style, content)
             style = style.to(device).unsqueeze(0)
             content = content.to(device).unsqueeze(0)
@@ -155,7 +168,4 @@ for content_path in content_paths:
                 output = style_transfer(vgg, decoder, content, style,
                                         args.alpha)
             output = output.cpu()
-
-            output_name = output_dir / '{:s}_stylized_{:s}{:s}'.format(
-                content_path.stem, style_path.stem, args.save_ext)
             save_image(output, str(output_name))
