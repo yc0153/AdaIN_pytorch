@@ -7,3 +7,11 @@ logs/*
 .venv/
 __pycache__/
 output_pytorch/
+output_int/
+input/content/etc/
+input/content/game_tile/
+input/style/etc/
+input/style/spring/
+input/style/summer/
+input/style/fall/
+input/style/winter/
