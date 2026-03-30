@@ -57,6 +57,39 @@ CUDA_VISIBLE_DEVICES=<gpu_id> python test.py --content input/content/avril.jpg -
 - `--alpha`: 스타일 강도 조절(기본값 1.0, 범위 0.0~1.0)
 - `--preserve_color`: 콘텐츠 이미지 색상 보존
 
+### 게임 타일 계절별 배치 실행
+
+이 저장소에는 게임 타일용 계절별 배치 실행 스크립트가 추가되어 있습니다.
+
+- content 폴더: `input/content/game_tile`
+- style 폴더: `input/style/spring`, `input/style/summer`, `input/style/fall`, `input/style/winter`
+- 결과 폴더: `output/spring`, `output/summer`, `output/fall`, `output/winter`
+
+기본 실행 스크립트:
+
+```bash
+python run_game_tile_seasons.py
+```
+
+더 빠른 배치 실행 스크립트:
+
+```bash
+python run_game_tile_seasons_batched.py --batch_size 1024
+```
+
+이 배치 스크립트는 다음을 보장하도록 구성되어 있습니다.
+
+- output 이미지는 항상 원본 content와 같은 크기로 저장
+- 계절 폴더 안의 `2D`, `real` 같은 하위 폴더 구조를 그대로 유지
+- 이미 생성된 결과 파일은 건너뛰므로 중간에 멈춰도 이어서 실행 가능
+
+예를 들어 아래와 같은 결과가 생성됩니다.
+
+- `output/spring/2D/rpgTile000_stylized_sa1.png`
+- `output/summer/real/rpgTile010_stylized_sr3.png`
+- `output/fall/2D/rpgTile100_stylized_fa4.png`
+- `output/winter/real/rpgTile220_stylized_wr5.png`
+
 ### 학습
 콘텐츠/스타일 이미지 디렉터리를 지정해 학습합니다.
 
