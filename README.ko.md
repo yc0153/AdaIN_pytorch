@@ -65,13 +65,7 @@ CUDA_VISIBLE_DEVICES=<gpu_id> python test.py --content input/content/avril.jpg -
 - style 폴더: `input/style/spring`, `input/style/summer`, `input/style/fall`, `input/style/winter`
 - 결과 폴더: `output/spring`, `output/summer`, `output/fall`, `output/winter`
 
-기본 실행 스크립트:
-
-```bash
-python run_game_tile_seasons.py
-```
-
-더 빠른 배치 실행 스크립트:
+계절별 실행은 아래 배치 스크립트를 사용합니다.
 
 ```bash
 python run_game_tile_seasons_batched.py --batch_size 1024
@@ -177,13 +171,6 @@ CUDA_VISIBLE_DEVICES=<gpu_id> python train.py --content_dir <content_dir> --styl
 - 결과는 `output_int/<season>/<2D|real>`에 저장된다
 
 즉, `여러 스타일을 섞은 결과를 만들 때 쓰는 파일`이다.
-
-#### `run_game_tile_seasons.py`
-
-- `test.py`를 반복 호출하는 기본형 실행 스크립트
-- 구조는 단순하지만 속도는 batched 버전보다 느리다
-
-즉, `개념적으로 가장 단순한 계절별 반복 실행 스크립트`이다.
 
 ### 결과 정리 파일
 

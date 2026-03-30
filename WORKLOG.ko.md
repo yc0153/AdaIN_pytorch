@@ -22,14 +22,7 @@
   - `RGBA` PNG 때문에 생기던 4채널 오류를 방지
   - 이미 생성된 output 파일이 있으면 해당 조합은 건너뛰도록 수정
 
-### 3. 계절별 실행 스크립트 추가
-
-- [`run_game_tile_seasons.py`](/mnt/c/Users/praisy/Desktop/26-1/캡스톤/AdaIN/pytorch-AdaIN/run_game_tile_seasons.py)
-  - `test.py`를 이용해 계절별 style 폴더를 순회하는 기본 실행 스크립트
-  - `output/<계절>/<하위폴더>` 구조로 저장
-  - `content_size=0`으로 고정해 output 크기를 content와 같게 유지
-
-### 4. 고속 배치 실행 스크립트 추가
+### 3. 고속 배치 실행 스크립트 추가
 
 - [`run_game_tile_seasons_batched.py`](/mnt/c/Users/praisy/Desktop/26-1/캡스톤/AdaIN/pytorch-AdaIN/run_game_tile_seasons_batched.py)
   - 모델을 한 번만 로드하고 여러 이미지에 대해 배치 추론
@@ -38,7 +31,7 @@
   - 이미 생성된 결과는 건너뛰도록 처리
   - 전체 계절 데이터 생성에 실제 사용한 스크립트
 
-### 5. 스타일 interpolation 실행 스크립트 추가
+### 4. 스타일 interpolation 실행 스크립트 추가
 
 - [`run_game_tile_interpolation_batched.py`](/mnt/c/Users/praisy/Desktop/26-1/캡스톤/AdaIN/pytorch-AdaIN/run_game_tile_interpolation_batched.py)
   - 같은 폴더의 style 이미지들(`2D`, `real`)을 하나의 그룹으로 보고 interpolation 수행
@@ -46,7 +39,7 @@
   - 결과를 `output_int/<계절>/<하위폴더>`에 저장
   - 각 계절별로 `2D` 229장, `real` 229장씩 생성
 
-### 6. 스프라이트시트 생성 스크립트 추가
+### 5. 스프라이트시트 생성 스크립트 추가
 
 - [`build_spritesheets.py`](/mnt/c/Users/praisy/Desktop/26-1/캡스톤/AdaIN/pytorch-AdaIN/build_spritesheets.py)
   - 원본 `RPGpack_sheet.png`의 실제 타일 배치를 분석해 동일한 위치에 타일을 다시 배치
